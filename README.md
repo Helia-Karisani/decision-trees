@@ -30,6 +30,11 @@ The goal is to predict the class label using the input features by learning a se
 
 A decision tree is a **rule-based model** that predicts a class by asking a sequence of yes/no questions.
 
+A decision tree is a rule-based learning model, it learns a sequence of IF–THEN rules.
+During training, the algorithm learns which questions to ask, and in what order. 
+The algorithm does something brute-force, comparing all possible values of all features. 
+A decision tree is built by repeatedly separating the training rows using the single question that most reduces class uncertainty, until no useful separation is possible.
+
 Example logic:
 ```
 IF feature_4 <= 14.0:
