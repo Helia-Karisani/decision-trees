@@ -64,7 +64,8 @@ At the root node:
 ---
 
 ### Step 2: Measure uncertainty using entropy
-The decision tree chooses its splits by measuring and reducing uncertainty using entropy.
+The decision tree chooses its splits by measuring and reducing uncertainty using entropy:
+
 -High entropy → classes are mixed → high uncertainty
 -Low entropy → one class dominates → low uncertainty
 -Entropy = 0 → all samples belong to one class (perfectly pure)
