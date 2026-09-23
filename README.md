@@ -111,7 +111,7 @@ feature_k <= threshold
 
 - Samples satisfying the condition go to the **left child**
 - The remaining samples go to the **right child**
-- No data is lost — samples are partitioned
+- No data is lost, samples are partitioned
 
 ---
 
@@ -172,7 +172,7 @@ Interpretation:
 
 ## What the Tree Splits (Important Clarification)
 
-The tree **splits data points (rows)** — not features, not classes.
+The tree **splits data points (rows)**, not features, not classes.
 
 At each node:
 - Training rows are divided into two groups
@@ -191,7 +191,7 @@ To classify a new sample:
 4. Repeat until a leaf is reached
 5. Output the leaf’s class
 
-No training samples are involved during prediction — only the learned rules.
+No training samples are involved during prediction, only the learned rules.
 
 ---
 
