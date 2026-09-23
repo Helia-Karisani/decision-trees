@@ -1,41 +1,25 @@
 # Decision Tree Classification (Entropy-Based)
 
-This project implements a **Decision Tree Classifier** to perform **multi-class classification**.  
-The model learns a hierarchy of decision rules that split the data based on feature values in order to predict a target class.
+This project trains a **Decision Tree Classifier** for **multi-class classification**. The model learns a hierarchy of decision rules that split the data on feature values to predict a target class.
 
-Unlike linear models that learn coefficients, **the tree structure itself is the learned model**.
+Unlike linear models that learn coefficients, the tree structure itself is the learned model.
 
 ---
 
 ## Problem Type
 
-- **Learning type**: Supervised learning
-- **Task**: Multi-class classification
-- **Model**: Decision Tree Classifier
-- **Splitting criterion**: Entropy (Information Gain)
+- **Learning type**: supervised
+- **Task**: multi-class classification
+- **Model**: `DecisionTreeClassifier`
+- **Splitting criterion**: entropy (information gain)
 
 ---
 
-## Dataset Overview
+## How a Decision Tree Works
 
-- Rows represent individual samples
-- Columns represent input features
-- One column represents the **target class**
+A decision tree predicts a class by asking a sequence of yes/no questions (IF–THEN rules). During training, it learns which questions to ask and in what order, by comparing all possible thresholds of all features and picking the split that most reduces class uncertainty. This repeats until no useful split is left.
 
-The goal is to predict the class label using the input features by learning a sequence of decision rules.
-
----
-
-## What Is a Decision Tree?
-
-A decision tree is a **rule-based model** that predicts a class by asking a sequence of yes/no questions.
-
-A decision tree is a rule-based learning model, it learns a sequence of IF–THEN rules.
-During training, the algorithm learns which questions to ask, and in what order. 
-The algorithm does something brute-force, comparing all possible values of all features. 
-A decision tree is built by repeatedly separating the training rows using the single question that most reduces class uncertainty, until no useful separation is possible.
-
-Example logic:
+Example:
 ```
 IF feature_4 <= 14.0:
     IF feature_2 <= 0.5:
@@ -46,191 +30,83 @@ ELSE:
     predict Class C
 ```
 
-Each internal node is a **decision rule**, and each leaf node is a **final prediction**.
+Each internal node is a decision rule, and each leaf is a final prediction.
 
 ---
 
-## How the Tree Is Built (Training Phase)
+## Building the Tree
 
-The tree is constructed **top-down**, using a greedy algorithm.
+1. **Start with all training rows** at the root. Classes are mixed, so uncertainty is high.
 
-### Step 1: Start with all training samples
+2. **Measure uncertainty with entropy:**
 
-At the root node:
-- All training rows are grouped together
-- Class labels are mixed
-- Uncertainty is high
+   ```
+   H = - Σ p_i log2(p_i)
+   ```
 
----
+   where p_i is the proportion of class i in the node. Entropy is 0 when all samples in a node belong to one class.
 
-### Step 2: Measure uncertainty using entropy
-The decision tree chooses its splits by measuring and reducing uncertainty using entropy:
+3. **Try all possible splits.** For each feature and candidate threshold, split rows into left/right groups and compute the weighted entropy.
 
-- High entropy → classes are mixed → high uncertainty
-- Low entropy → one class dominates → low uncertainty
-- Entropy = 0 → all samples belong to one class (perfectly pure)
+4. **Pick the split with the highest information gain:**
 
-Entropy measures how mixed the classes are:
+   ```
+   IG = H_parent − (n_left / n) * H_left − (n_right / n) * H_right
+   ```
 
-H = - Σ p_i log2(p_i)
+   This gives a rule like `feature_k <= threshold`.
 
-where p_i is the proportion of class i in the node.
+5. **Split the rows.** Rows that satisfy the rule go left, the rest go right.
 
-- High entropy → mixed classes
-- Entropy = 0 → all samples belong to one class
+6. **Repeat** on each child node.
 
----
+7. **Stop** when a node is pure, the maximum depth is reached, no split improves information gain, or too few samples remain.
 
-### Step 3: Try all possible splits
-
-For each feature:
-- Try multiple threshold values
-- For each candidate split:
-  - Split rows into left/right groups
-  - Compute entropy for each group
-  - Compute weighted entropy
+Note that the tree splits rows (samples), not features or classes.
 
 ---
 
-### Step 4: Choose the best split (Information Gain)
+## Reading the Tree
 
-Information Gain measures how much uncertainty is reduced:
+Each node shows:
 
-IG = H_parent − (n_left / n) * H_left − (n_right / n) * H_right
+- **Decision rule**, e.g. `x[4] <= 14.027`
+- **Entropy**: remaining uncertainty
+- **Samples**: number of training rows at the node
+- **Value**: class counts, e.g. `[15, 11, 13, 38, 63]`
 
-The split with **maximum Information Gain** is selected.
+The prediction at a node is the class with the highest count.
 
-This produces a rule like:
-```
-feature_k <= threshold
-```
-
----
-
-### Step 5: Split the data
-
-- Samples satisfying the condition go to the **left child**
-- The remaining samples go to the **right child**
-- No data is lost — samples are partitioned
-
----
-
-### Step 6: Repeat recursively
-
-Steps 2–5 are repeated independently on each child node.
-
----
-
-### Step 7: Stopping conditions
-
-A node becomes a **leaf** if:
-- Entropy = 0 (pure node)
-- Maximum depth is reached
-- No split improves information gain
-- Too few samples remain
-
----
-
-## What Each Node Represents
-
-Each node in the trained tree shows:
-
-- **Decision rule**  
-  Example: `x[4] <= 14.027`
-
-- **Entropy**  
-  Remaining uncertainty at that node
-
-- **Samples**  
-  Number of training rows that reached this node
-
-- **Value**  
-  Class counts at this node  
-  Example: `[15, 11, 13, 38, 63]`
-
-Prediction at a node is the **class with the highest count**.
-
----
-
-## Leaf Nodes (Final Decisions)
-
-A leaf node represents a final prediction.
-
-Example:
+Example leaf:
 ```
 entropy = 0.0
 samples = 28
 value = [0, 0, 0, 28, 0]
 ```
 
-Interpretation:
-- All 28 samples belong to the same class
-- The model stops splitting
-- Any new sample reaching this leaf is predicted as that class
+All 28 samples belong to one class, so any new sample that reaches this leaf is predicted as that class.
 
 ---
 
-## What the Tree Splits (Important Clarification)
+## Prediction
 
-The tree **splits data points (rows)** — not features, not classes.
-
-At each node:
-- Training rows are divided into two groups
-- Each row follows exactly one branch
-- The process continues until a leaf is reached
+To classify a new sample, start at the root, apply the rule, move left or right, and repeat until a leaf is reached. The leaf's class is the prediction.
 
 ---
 
-## Prediction Phase (After Training)
-
-To classify a new sample:
-
-1. Start at the root
-2. Evaluate the decision rule
-3. Move left or right
-4. Repeat until a leaf is reached
-5. Output the leaf’s class
-
-No training samples are involved during prediction — only the learned rules.
-
----
-
-## Model Configuration Used
+## Model Configuration
 
 - Criterion: `entropy`
-- Maximum depth: controlled to prevent overfitting
-- Algorithm: greedy, top-down recursive splitting
+- Maximum depth limited to prevent overfitting
 
 ---
 
-## Why Decision Trees Are Learning Models
-
-Decision trees learn:
-- Which features matter
-- Which thresholds to use
-- In what order decisions should be made
-
-The learned **tree structure is the model**.
-
----
-
-## Key Characteristics
+## Characteristics
 
 - Interpretable
 - Non-linear
-- Handles mixed feature types
-- No feature scaling required
-- Prone to overfitting without depth control
-
----
-
-## Summary
-
-This project demonstrates:
-- How a decision tree is built from data
-- How entropy and information gain guide learning
-- How classification is performed using learned rules
-- Why the tree visualization is the trained model itself
+- No feature scaling needed
+- Overfits without depth control
 
 ---
 
@@ -240,4 +116,4 @@ This project demonstrates:
 - pandas
 - numpy
 - scikit-learn
-- matplotlib (for visualization)
+- matplotlib
